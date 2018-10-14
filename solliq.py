@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # ## solliq - Solidus and liquidus parameterizations for geomaterials
-# ####  Thomas Ruedas (Thomas dot Ruedas at dlr dot de) - solliq v.1.2, 28/06/2018
+# ####  Thomas Ruedas (Thomas dot Ruedas at dlr dot de) - solliq v.1.3, 14/10/2018
 # The solidi and liquidi of geomaterials are phase boundaries and depend on pressure $p$, temperature $T$, and composition. Solidi and liquidi of peridotite and basalt/eclogite (both anhydrous) as well as iron and iron-sulfur alloys are given here as parameterizations in the form $T(p)$, possibly with additional terms that account for compositional variations. $T$ is always given in K, $p$ in GPa.
 # 
 # #### Note on citation
@@ -48,26 +48,27 @@
 # \end{equation}
 # with $a=T_\mathrm{ref}/a'^\frac{1}{c'}$, $b=a'-p_\mathrm{ref}$, and $c=\frac{1}{c'}$. For each dataset, several model functions were tried, and the one with the least rms residual was usually chosen if it met certain requirements. The most important requirements reflect experimental experience and are that the curve should be monotonically increasing and have no inflexion points in the $p$ range of interest and that its slope should decrease with increasing $p$. The functions are generally not meant to be used for extrapolation much beyond the range of data coverage.
 # 
-# If the data warranted it, the possible effects of phase transitions of the solid phase were taken into account by carrying out piecewise fits; such solid-solid phase transitions may manifest themselves for instance in the form of kinks in the melting curve, although sharp kinks are expected in chemically pure systems rather than solid-solution systems such as several of those of interest here. In such piecewise fits, jumps were allowed to occur in some cases, contrary to common practice, on the grounds that the stark contrast between the physical properties does not seem to justify the assumption of continuity; in this argument, the idealized assumption of a sharp boundary is made, but it is acknowledged that natural transitions will be smooth and likely involve a very steep but not mathematically discontinuous change. The most important example is the transition from a terrestrial upper-mantle mineral assemblage to a lower-mantle assemblage.
+# If the data warranted it, the possible effects of phase transitions of the solid phase were taken into account by carrying out piecewise fits; such solid-solid phase transitions may manifest themselves for instance in the form of kinks in the melting curve, although sharp kinks are expected in chemically pure systems rather than solid-solution systems such as several of those of interest here. In such piecewise fits, continuity conditions were imposed on solidus fits to data from natural compositions that included solid solutions where necessary; the practice to allow jumps in the solidus followed in older versions is abandoned now, because smooth transitions are expected in all systems that feature solid solutions. The most important example is the transition from a terrestrial upper-mantle mineral assemblage to a lower-mantle assemblage.
 
 # ### <a id='Tsol_per'></a>Peridotite solidus
 # #### <a id='Tsol_E'></a>Terrestrial peridotite
-# Data for terrestrial peridotite are available for the entire depth range of the Earth's mantle. The following parameterization is based on Hirschmann (2000, tab.2 and pers.comm.) and Hirschmann et al. (2009) for the upper mantle, and the downward shift by 35 K suggested by Katz et al. (2003) is applied. In the lower mantle, the linear Hirschmann et al. fit is replaced with a modified Simon-Glatzel equation fitted to some of the data also used by Hirschmann et al. (2009), supplemented by additional data from Hirose & Fei (2002), Ito & Katsura (1992), Fiquet et al. (2010), and Zerr et al. (1997,1998), covering 20.64 GPa $< p <$ 122 GPa.
+# Data for terrestrial peridotite are available for the entire depth range of the Earth's mantle. The following parameterization is based on Hirschmann (2000, tab.2 and pers.comm.) and Hirschmann et al. (2009) for the upper mantle, and the downward shift by 35 K suggested by Katz et al. (2003) is applied. In the lower mantle, the linear Hirschmann et al. fit is replaced with a curved model function fitted to some of the data also used by Hirschmann et al. (2009), supplemented by additional data from Hirose & Fei (2002), Fiquet et al. (2010), and Zerr et al. (1997,1998), covering 22.5 GPa $< p <$ 122 GPa.
 # \begin{equation}
 # T_\mathrm{s,E}(p)=
 # \begin{cases}
 # 1358.81061+132.899012p-5.1404654p^2&p<10\,\mathrm{GPa}\\
 # -1.092(p-10)^2+32.39(p-10)+2173.15&10\,\mathrm{GPa}\leq p < 23.5\,\mathrm{GPa}\\
-# 1486.69(p-10.662)^{0.21275}&\text{else.}
+# -1647.15-5.85p+1329.126\ln(p)&\text{else.}
 # \end{cases}
 # \end{equation}
-# The high-$p$ study on a peridotitic composition by Nomura et al. (2014) was excluded, because they used a synthetic composition (pyrolite) and arrived at a substantially lower solidus; futhermore, their data have strong scatter and provide only rather wide brackets on the solidus temperature.
+# A Simon-Glatzel-type fit could not be carried out for the lower mantle data with the constraint to match the Hirschmann et al. (2009) curve at 23.5 GPa. The high-$p$ study on a peridotitic composition by Nomura et al. (2014) was excluded, because they used a synthetic composition (pyrolite) and arrived at a substantially lower solidus; futhermore, their data have strong scatter and provide only rather wide brackets on the solidus temperature.
 # 
-# The transition from the upper to the lower mantle involves a step in the solidus curve, because the transition pressure of 23.5 GPa from Hirschmann et al. (2009) was kept. The lower-mantle solidus permits plausible extrapolation to higher $p$, e.g., for application in exoplanets, but it must be kept in mind that a transition of bridgmanite to postperovskite is expected somewhere between 130 and 170 GPa, and there are no experimental constraints on the solidus in a postperovskite lithology.
+# The lower-mantle solidus permits plausible extrapolation to higher $p$, e.g., for application in exoplanets, but it must be kept in mind that a transition of bridgmanite to postperovskite is expected somewhere between 130 and 170 GPa, and there are no experimental constraints on the solidus in a postperovskite lithology.
 
 # In[ ]:
 
 
+import numpy as np
 def Tsol_Earth(p):
     if p < 10:
         Tsol=1358.81061+(132.899012-5.1404654*p)*p # w/ Katz shift
@@ -75,16 +76,16 @@ def Tsol_Earth(p):
         pr=p-10.
         Tsol=(-1.092*pr+32.39)*pr+2173.15 # w/ Katz shift
     else:
-        Tsol=1486.69*(p-10.662)**0.21275
+        Tsol=-1647.15020384-5.85124635*p+1329.1263647*np.log(p)
     return Tsol
 
 
 # #### <a id='Tsol_CMAS'></a>CMAS solidus
-# The CaO-MgO-Al<sub>2</sub>O<sub>3</sub>-SiO<sub>2</sub> (CMAS) system is the simplest oxide system capable of reproducing endmembers of all four phases of a fertile lherzolite, i.e., olivine (forsterite Mg<sub>2</sub>SiO<sub>4</sub>), orthopyroxene (enstatite MgSiO<sub>3</sub>), clinopyroxene (diopside CaMgSi<sub>2</sub>O<sub>6</sub>), and either plagioclase (anorthite CaAl<sub>2</sub>Si<sub>2</sub>O<sub>8</sub>), spinel (MgAl<sub>2</sub>O<sub>4</sub>), or garnet (pyrope Mg<sub>3</sub>Al<sub>2</sub>Si<sub>3</sub>O<sub>12</sub>). It can also serve as a proxy for the presumably very Fe-poor peridotite of Mercury. Data are available for $p$ up to 21.5 GPa (Asahara et al., 1998; Asahara & Ohtani, 2001; Gudfinnsson & Presnall, 1996, 2000; Herzberg et al., 1990; Klemme & O'Neill, 2000; Litasov & Ohtani, 2002; Liu & O'Neill, 2004; Milholland & Presnall, 1998; Presnall et al., 1979) and have been fitted with a uniform polynomial, i.e., without considering phase transitions that may introduce kinks (which would probably be rather sharp in this case due to the absence of solid solutions):
+# The CaO-MgO-Al<sub>2</sub>O<sub>3</sub>-SiO<sub>2</sub> (CMAS) system is the simplest oxide system capable of reproducing all four phases of a fertile lherzolite, i.e., olivine (forsterite Mg<sub>2</sub>SiO<sub>4</sub>), orthopyroxene (enstatite MgSiO<sub>3</sub>+wollastonite CaSiO<sub>3</sub>), clinopyroxene (diopside CaMgSi<sub>2</sub>O<sub>6</sub>), and either plagioclase (anorthite CaAl<sub>2</sub>Si<sub>2</sub>O<sub>8</sub>), spinel (MgAl<sub>2</sub>O<sub>4</sub>), or garnet (pyrope Mg<sub>3</sub>Al<sub>2</sub>Si<sub>3</sub>O<sub>12</sub>+grossular Ca<sub>3</sub>Al<sub>2</sub>Si<sub>3</sub>O<sub>12</sub>). It can also serve as a proxy for the presumably very Fe-poor peridotite of Mercury. Data are available for $p$ up to 21.5 GPa (Asahara et al., 1998; Asahara & Ohtani, 2001; Gudfinnsson & Presnall, 1996, 2000; Herzberg et al., 1990; Klemme & O'Neill, 2000; Litasov & Ohtani, 2002; Liu & O'Neill, 2004; Milholland & Presnall, 1998; Presnall et al., 1979) and have been fitted with a uniform polynomial, i.e., without considering phase transitions that may introduce kinks (which would probably be rather sharp in this case due to the absence of solid solutions in some of the phases):
 # \begin{equation}
 # T_\mathrm{s,CMAS}(p)=1477.54+139.391p-7.7545p^2+0.160258p^3
 # \end{equation}
-# (Ruedas & Breuer, 2018, App.B). For $p>23.5$ GPa, which would correspond to the lower mantle, we use the terrestrial peridotite solidus, tentatively shifted up by 50 K, but there are no experimental constraints.
+# (Ruedas & Breuer, 2018, App.B). For $p>23.5$ GPa, which would correspond to the lower mantle, we use the terrestrial peridotite solidus, tentatively shifted up by about 139 K to ensure continuity, but there are no experimental constraints.
 
 # In[ ]:
 
@@ -93,7 +94,7 @@ def Tsol_CMAS(p):
     if p < 23.5:
         Tsol=1477.54+(139.391-(7.7545-0.160258*p)*p)*p
     else:
-        Tsol=Tsol_Earth(p)+50.
+        Tsol=Tsol_Earth(p)+139.2162
     return Tsol
 
 
@@ -168,7 +169,7 @@ def Tsol_intp(p,ox):
 
 
 # #### <a id='Tsol_chon'></a>Chondritic solidus
-# Some melting experiments have also been conducted on various natural and synthetic "chondritic" compositions. The fit implemented here follows Andrault et al. (2018) in treating the data for the (terrestrial) upper and lower mantle pressure range separately. In the latter, only the data from Andrault et al. (2011, synthetic CMASF) are available, as a single additional point from Ohtani & Sawamoto (1987) used a simplified (CMASF) composition and is probably not reliable. For lower pressures, we supplement the extensive dataset from Andrault et al. (2018, synthetic CMASFNCrT) with some point from Berthet et al. (2009, Indarch EH4), Ohtani (1987, synthetic CMASF), and Takahashi (1983, Yamato Y-74191 L3 chondrite) that seem to fit in well. Additional points from Agee & Draper (2004, natural and synthetic Homestead) and Cartier et al. (2014, Hvittis enstatitic chondrite EL6) were too far above the general trend to be considered. Data for carbonaceous chondrites were excluded. In summary, the implemented solidus is
+# Some melting experiments have also been conducted on various natural and synthetic "chondritic" compositions. The fit implemented here follows Andrault et al. (2018) in treating the data for the (terrestrial) upper and lower mantle pressure range separately. In the latter, only the data from Andrault et al. (2011, synthetic CMASF) are available, as a single additional point from Ohtani & Sawamoto (1987) used a simplified (CMASF) composition and is probably not reliable. For lower pressures, we supplement the extensive dataset from Andrault et al. (2018, synthetic CMASFNCrT) with some points from Berthet et al. (2009, Indarch EH4), Ohtani (1987, synthetic CMASF), and Takahashi (1983, Yamato Y-74191 L3 chondrite) that seem to fit in well. Additional points from Agee & Draper (2004, natural and synthetic Homestead) and Cartier et al. (2014, Hvittis enstatitic chondrite EL6) were too far above the general trend to be considered. Data for carbonaceous chondrites were excluded. In summary, the implemented solidus is
 # \begin{equation}
 # T_\mathrm{s,ch}(p)=
 # \begin{cases}
@@ -538,7 +539,6 @@ u={'O': 15.999e-3,'Na': 22.98976928e-3,'Mg': 24.305e-3,'S': 32.06e-3,   'K': 39.
 
 import sys
 from collections import defaultdict
-import numpy as np
 import matplotlib.pyplot as plt
 ox={}
 p_crv=[]; Ts_crv=[]; Tl_crv=[]; Ti_crv=[]
@@ -628,20 +628,18 @@ if mat == 1:
         plt.plot(p_crv,Tl_crv,"r--",label="Batch liquidus")
 #       experimental data (lower mantle) and parameterization: solidus and fractional liquidus
         ps_dat={'Fiquet et al. (2010)': [36.2,51.8,61.3,80.2,95.1,106.6,122.0],
-                'Hirose & Fei (2002)': [22.,25.,25.,27.],
-                'Ito & Katsura (1992)': [24.],
+                'Hirose & Fei (2002)': [25.,25.,27.],
                 'Ito & Takahashi (1987)': [25.],
-                'Trønnes & Frost (2002)': [22.,23.,24.5,22.,23.,24.5,22.,24.,24.5],
-                'Zerr et al. (1997,1998)': [27.81,31.05,32.31,25.04,21.03,29.30,41.21,57.70,20.64,26.80,39.72,47.25,58.93],
+                'Trønnes & Frost (2002)': [23.,24.5,23.,24.5,24.,24.5],
+                'Zerr et al. (1997,1998)': [27.81,31.05,32.31,25.04,29.30,41.21,57.70,26.80,39.72,47.25,58.93],
                 'Zhang & Herzberg (1994)': [22.5]}
         Ts_dat={'Fiquet et al. (2010)': [2817.,3124.,3196.,3690.,3930.,3908.,4100.],
-                'Hirose & Fei (2002)': [2473.,2773.,2473.,2723.],
-                'Ito & Katsura (1992)': [2823.],
+                'Hirose & Fei (2002)': [2773.,2473.,2723.],
                 'Ito & Takahashi (1987)': [2773.],
-                'Trønnes & Frost (2002)': [2423.,2413.,2403.,2433.,2433.,2503.,2433.,2453.,2503.],
-                'Zerr et al. (1997,1998)': [2924.,2994.,3128.,2272.,2166.,2495.,2832.,3255.,2553.,2880.,3139.,3404.,3456.],
+                'Trønnes & Frost (2002)': [2413.,2403.,2433.,2503.,2453.,2503.],
+                'Zerr et al. (1997,1998)': [2924.,2994.,3128.,2272.,2495.,2832.,3255.,2880.,3139.,3404.,3456.],
                 'Zhang & Herzberg (1994)': [2408.]}
-        mark_dat={'Fiquet et al. (2010)': 'o','Hirose & Fei (2002)': 's',                  'Ito & Katsura (1992)': 'v','Ito & Takahashi (1987)': '^',                  'Trønnes & Frost (2002)': 'x','Zerr et al. (1997,1998)': '+',                  'Zhang & Herzberg (1994)': 'D'}
+        mark_dat={'Fiquet et al. (2010)': 'o','Hirose & Fei (2002)': 's',                  'Ito & Takahashi (1987)': 'v','Trønnes & Frost (2002)': '^',                  'Zerr et al. (1997,1998)': 'x','Zhang & Herzberg (1994)': '+'}
         Ts_crv=[Tsol_Earth(p) for p in p_crv]
         Tl_crv=[Tliq_per(p) for p in p_crv]
         pTrange=[0.,175.,1350.,8000.]
@@ -671,7 +669,7 @@ if mat == 1:
                 'Gudfinnsson & Presnall (1996)': [1768.,1798.,1823.,1848.,1868.,1878.,1883.,1888.],
                 'Herzberg et al. (1990)': [2243.,2328.,2393.,2333.,2458.]}
         mark_dat={'Asahara et al. (1998)': 'o','Gudfinnsson & Presnall (1996)': 'v',                 'Herzberg et al. (1990)': '^'}
-        p_crv=np.linspace(0.,23.,101)
+        p_crv=np.linspace(0.,25.,101)
         Tl_crv=[Tliq_per(p) for p in p_crv]
         Ts_crv=[Tsol_CMAS(p) for p in p_crv]
         pTrange=[0.,25.,1400.,3000.]
@@ -1037,6 +1035,9 @@ if mat == 3 and xS > 0 and xS < 0.5:
 
 
 # #### <a id='hist'></a>Version history
+# - v.1.3 (14/10/2018):
+#     - Removed jump between transition zone and lower mantle assemblages in terrestrial peridotite by refitting data with a continuity constraint at 23.5 GPa. The data point from Ito & Katsura (1992) and some data points from Hirose & Fei (2002), Trønnes & Frost (2002) and Zerr et al. (1998) at $p$ below 22.5 GPa that had been used in previous versions were excluded now.
+#     - As a consequence of the new terrestrial lower-mantle solidus, the shift applied to for the CMAS assemblage has been increased to about 139 K, ensuring continuity here as well.
 # - v.1.2 (28/06/2018):
 #     - Port to Python 3
 #     - Added solidus and liquidus for chondritic composition
